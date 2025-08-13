@@ -36,7 +36,7 @@
     @media (max-width:980px){.grid{grid-template-columns:repeat(3,1fr)} .hero{grid-template-columns:1fr} }
     @media (max-width:700px){.grid{grid-template-columns:repeat(2,1fr)} }
     @media (max-width:460px){.grid{grid-template-columns:1fr} .hero h1{font-size:32px} }
-    .card{background:var(--card);border:1px solid rgba(255,255,255,.06);border-radius:16px;padding:12px;display:flex;flex-direction:column;gap:10px}
+    .card{background:var(--card);border:1px solid rgba(255,255,255,.06);border-radius:16px;padding:12px;display:flex;flex-direction:column;gap:10px;cursor:pointer}
     .price{display:flex;align-items:baseline;gap:10px}
     .price .now{font-weight:800}
     .price .was{color:var(--muted);text-decoration:line-through;font-size:.9em}
@@ -179,113 +179,69 @@
     </footer>
   </aside>
 
+  <!-- PRODUCT MODAL -->
+  <div id="productModal" style="
+    position:fixed;top:0;left:0;width:100%;height:100%;
+    display:none;align-items:center;justify-content:center;
+    background:rgba(0,0,0,0.7);z-index:100;
+  ">
+    <div style="
+      background:var(--card);padding:24px;border-radius:16px;
+      max-width:500px;width:90%;position:relative;color:var(--text);
+    ">
+      <button id="closeModal" style="
+        position:absolute;top:12px;right:12px;background:none;border:none;font-size:18px;color:var(--text);cursor:pointer
+      ">✕</button>
+      <h3 id="modalTitle" style="margin-top:0"></h3>
+      <img id="modalImg" style="width:100%;border-radius:12px;margin:12px 0"/>
+      <div id="modalSpecs" class="muted"></div>
+      <div id="modalPrice" class="price" style="margin-top:12px"></div>
+    </div>
+  </div>
+
   <script>
   // ====== PRODUCT DATA ======
-  // Add/modify products here. For each product, you can optionally set a direct checkoutLink
-  // (e.g., a Payhip product link, Stripe Payment Link, PayPal button URL).
-  // If checkoutLink is empty, cart checkout will compose a WhatsApp order message.
   const PRODUCTS = [
-    {
-      id: 'lap-001',
-      title: 'HP OMEN 17',
-      brand: 'HP',
-      category: 'Laptop',
-      condition: 'Grade A',
-      specs: 'i9-13900HX • RTX 4080 • 32GB • 2TB SSD • 17" WQHD',
-      price: 2300,
-      was: 2600,
-      img: 'https://picsum.photos/seed/thinkpad/600/400',
-      checkoutLink: '' // paste your Payhip/Stripe/PayPal link here
-    },
-    {
-      id: 'lap-002',
-      title: 'Apple MacBook Air 2019',
-      brand: 'Apple',
-      category: 'Laptop',
-      condition: 'Grade B',
-      specs: 'i5 • 8GB • 256GB SSD • 13.3" Retina',
-      price: 449,
-      was: 549,
-      img: 'https://picsum.photos/seed/macbook/600/400',
-      checkoutLink: ''
-    },
-    {
-      id: 'phn-101',
-      title: 'iPhone 12 128GB',
-      brand: 'Apple',
-      category: 'Phone',
-      condition: 'Grade A',
-      specs: '128GB • Battery ≥ 85%',
-      price: 389,
-      was: 459,
-      img: 'https://picsum.photos/seed/iphone12/600/400',
-      checkoutLink: ''
-    },
-    {
-      id: 'phn-102',
-      title: 'Samsung Galaxy S21',
-      brand: 'Samsung',
-      category: 'Phone',
-      condition: 'Grade B',
-      specs: '128GB • Battery ≥ 85%',
-      price: 279,
-      was: 329,
-      img: 'https://picsum.photos/seed/galaxys21/600/400',
-      checkoutLink: ''
-    }
+    {id:'lap-001',title:'HP OMEN 17',brand:'HP',category:'Laptop',condition:'Grade A',specs:'i9-13900HX • RTX 4080 • 32GB • 2TB SSD • 17" WQHD',price:2300,was:2600,img:'https://picsum.photos/seed/thinkpad/600/400',checkoutLink:''},
+    {id:'lap-002',title:'Apple MacBook Air 2019',brand:'Apple',category:'Laptop',condition:'Grade B',specs:'i5 • 8GB • 256GB SSD • 13.3" Retina',price:449,was:549,img:'https://picsum.photos/seed/macbook/600/400',checkoutLink:''},
+    {id:'phn-101',title:'iPhone 12 128GB',brand:'Apple',category:'Phone',condition:'Grade A',specs:'128GB • Battery ≥ 85%',price:389,was:459,img:'https://picsum.photos/seed/iphone12/600/400',checkoutLink:''},
+    {id:'phn-102',title:'Samsung Galaxy S21',brand:'Samsung',category:'Phone',condition:'Grade B',specs:'128GB • Battery ≥ 85%',price:279,was:329,img:'https://picsum.photos/seed/galaxys21/600/400',checkoutLink:''}
   ];
 
   // ====== STATE ======
-  const state = {
-    q: '', brand: '', cat: '', cond: '', sort: 'relevance',
-    cart: JSON.parse(localStorage.getItem('cart-v1')||'{}') // {id: qty}
-  };
-
-  const els = {
+  const state={q:'',brand:'',cat:'',cond:'',sort:'relevance',cart:JSON.parse(localStorage.getItem('cart-v1')||'{}')};
+  const els={
     grid: document.getElementById('grid'),
     q: document.getElementById('q'), brand: document.getElementById('brand'), cat: document.getElementById('cat'), cond: document.getElementById('cond'), sort: document.getElementById('sort'),
     cartBtn: document.getElementById('cartBtn'), cartFab: document.getElementById('cartFab'), cartCount: document.getElementById('cartCount'), cartCountFab: document.getElementById('cartCountFab'),
     drawer: document.getElementById('drawer'), closeDrawer: document.getElementById('closeDrawer'), cartItems: document.getElementById('cartItems'), subtotal: document.getElementById('subtotal'), checkout: document.getElementById('checkout'), year: document.getElementById('year')
   };
-  els.year.textContent = new Date().getFullYear();
+  els.year.textContent=new Date().getFullYear();
 
   // Populate brand filter
-  [...new Set(PRODUCTS.map(p=>p.brand))].sort().forEach(b=>{
-    const o=document.createElement('option');o.textContent=b;els.brand.appendChild(o)
-  });
+  [...new Set(PRODUCTS.map(p=>p.brand))].sort().forEach(b=>{const o=document.createElement('option');o.textContent=b;els.brand.appendChild(o)});
 
   // Helpers
-  const fmt = n => `$${n.toFixed(0)}`;
-  const saveCart = () => localStorage.setItem('cart-v1', JSON.stringify(state.cart));
-  const cartQty = () => Object.values(state.cart).reduce((a,b)=>a+b,0);
-  const cartItemsList = () => Object.entries(state.cart).map(([id,qty])=>({ ...PRODUCTS.find(p=>p.id===id), qty }));
-  const subtotal = () => cartItemsList().reduce((s,i)=>s+i.price*i.qty,0);
+  const fmt=n=>`$${n.toFixed(0)}`;
+  const saveCart=()=>localStorage.setItem('cart-v1',JSON.stringify(state.cart));
+  const cartQty=()=>Object.values(state.cart).reduce((a,b)=>a+b,0);
+  const cartItemsList=()=>Object.entries(state.cart).map(([id,qty])=>({...PRODUCTS.find(p=>p.id===id),qty}));
+  const subtotal=()=>cartItemsList().reduce((s,i)=>s+i.price*i.qty,0);
 
   // Render products
   function render(){
-    const q = state.q.trim().toLowerCase();
-    let list = PRODUCTS.filter(p=>
-      (!state.brand || p.brand===state.brand) &&
-      (!state.cat || p.category===state.cat) &&
-      (!state.cond || p.condition===state.cond) &&
-      (!q || (p.title+p.brand+p.specs+p.category+p.condition).toLowerCase().includes(q))
-    );
+    const q=state.q.trim().toLowerCase();
+    let list=PRODUCTS.filter(p=>(!state.brand||p.brand===state.brand)&&(!state.cat||p.category===state.cat)&&(!state.cond||p.condition===state.cond)&&(!q||(p.title+p.brand+p.specs+p.category+p.condition).toLowerCase().includes(q)));
     if(state.sort==='price-asc') list.sort((a,b)=>a.price-b.price);
     else if(state.sort==='price-desc') list.sort((a,b)=>b.price-a.price);
 
-    els.grid.innerHTML = list.map(p=>`
-      <article class="card" role="article" aria-label="${p.title}">
+    els.grid.innerHTML=list.map(p=>`
+      <article class="card" role="article" aria-label="${p.title}" data-id="${p.id}">
         <img loading="lazy" src="${p.img}" alt="${p.title}">
-        <div class="row wrap">
-          <strong>${p.title}</strong>
-          <span class="chip">${p.condition}</span>
-        </div>
+        <div class="row wrap"><strong>${p.title}</strong><span class="chip">${p.condition}</span></div>
         <div class="muted" style="font-size:14px">${p.specs}</div>
         <div class="row">
-          <div class="price">
-            <span class="now">${fmt(p.price)}</span>
-            ${p.was?`<span class="was">${fmt(p.was)}</span>`:''}
-          </div>
+          <div class="price"><span class="now">${fmt(p.price)}</span>${p.was?`<span class="was">${fmt(p.was)}</span>`:''}</div>
           <div class="row" style="gap:6px">
             ${p.checkoutLink?`<a class="btn" href="${p.checkoutLink}" target="_blank" rel="noopener">Buy</a>`:''}
             <button class="btn" data-add="${p.id}">Add</button>
@@ -296,73 +252,60 @@
     `).join('');
 
     // Bind add buttons
-    document.querySelectorAll('[data-add]').forEach(btn=>{
-      btn.onclick = () => { const id = btn.getAttribute('data-add'); state.cart[id]=(state.cart[id]||0)+1; updateCart(); }
+    document.querySelectorAll('[data-add]').forEach(btn=>{btn.onclick=()=>{const id=btn.getAttribute('data-add');state.cart[id]=(state.cart[id]||0)+1;updateCart();}});
+
+    // Bind card click for modal
+    document.querySelectorAll('.card').forEach(card=>{
+      card.onclick=e=>{
+        if(e.target.tagName.toLowerCase()==='button'||e.target.tagName.toLowerCase()==='a') return;
+        const id=card.getAttribute('data-id');
+        const p=PRODUCTS.find(x=>x.id===id);
+        document.getElementById('modalTitle').textContent=p.title;
+        document.getElementById('modalImg').src=p.img;
+        document.getElementById('modalSpecs').textContent=p.specs;
+        document.getElementById('modalPrice').innerHTML=`<span class="now">${fmt(p.price)}</span>${p.was?`<span class="was">${fmt(p.was)}</span>`:''}`;
+        document.getElementById('productModal').style.display='flex';
+      }
     });
   }
 
+  // ====== CART ======
   function updateCart(){
     saveCart();
-    const qty = cartQty();
-    els.cartCount.textContent = qty; els.cartCountFab.textContent = qty;
-
-    const items = cartItemsList();
-    if(items.length===0){ els.cartItems.innerHTML = `<div class="empty">Your cart is empty.</div>`; }
-    else{
-      els.cartItems.innerHTML = items.map(i=>`
-        <div class="row">
-          <div style="flex:1">
-            <strong style="display:block">${i.title}</strong>
-            <span class="label">${i.specs}</span>
-            <div class="muted">${fmt(i.price)} × ${i.qty}</div>
-          </div>
-          <div class="row" style="gap:6px">
-            ${i.checkoutLink?`<a class="btn" href="${i.checkoutLink}" target="_blank" rel="noopener">Pay</a>`:''}
-            <button class="btn" data-dec="${i.id}">−</button>
-            <button class="btn" data-inc="${i.id}">+</button>
-            <button class="btn" data-rem="${i.id}" title="Remove">🗑</button>
-          </div>
+    const items=cartItemsList();
+    els.cartItems.innerHTML=items.length?items.map(i=>`
+      <div class="row" style="margin-bottom:12px">
+        <div>
+          <div>${i.title} (${i.condition}) x${i.qty}</div>
+          <div class="muted" style="font-size:12px">${fmt(i.price)} each</div>
         </div>
-        <div class="line"></div>
-      `).join('');
-      // Bind qty controls
-      document.querySelectorAll('[data-inc]').forEach(b=>b.onclick=()=>{const id=b.getAttribute('data-inc'); state.cart[id]++; updateCart();});
-      document.querySelectorAll('[data-dec]').forEach(b=>b.onclick=()=>{const id=b.getAttribute('data-dec'); state.cart[id]=Math.max(1,(state.cart[id]-1)); updateCart();});
-      document.querySelectorAll('[data-rem]').forEach(b=>b.onclick=()=>{const id=b.getAttribute('data-rem'); delete state.cart[id]; updateCart();});
-    }
-    els.subtotal.textContent = fmt(subtotal());
+        <button class="btn" onclick="state.cart['${i.id}']--;if(state.cart['${i.id}']<=0) delete state.cart['${i.id}'];updateCart()">−</button>
+      </div>
+    `).join(''):'<div class="empty">Cart is empty</div>';
+    els.subtotal.textContent=fmt(subtotal());
+    els.cartCount.textContent=cartQty();
+    els.cartCountFab.textContent=cartQty();
   }
 
-  // Drawer controls
-  function openDrawer(){ els.drawer.classList.add('open'); els.drawer.setAttribute('aria-hidden','false'); }
-  function closeDrawer(){ els.drawer.classList.remove('open'); els.drawer.setAttribute('aria-hidden','true'); }
-  els.cartBtn.onclick = openDrawer; els.cartFab.onclick = openDrawer; els.closeDrawer.onclick = closeDrawer;
+  // ====== EVENTS ======
+  els.q.oninput=e=>{state.q=e.target.value;render();}
+  els.brand.onchange=e=>{state.brand=e.target.value;render();}
+  els.cat.onchange=e=>{state.cat=e.target.value;render();}
+  els.cond.onchange=e=>{state.cond=e.target.value;render();}
+  els.sort.onchange=e=>{state.sort=e.target.value;render();}
+  els.cartBtn.onclick=()=>{els.drawer.classList.add('open');els.drawer.setAttribute('aria-hidden','false');}
+  els.cartFab.onclick=()=>{els.drawer.classList.add('open');els.drawer.setAttribute('aria-hidden','false');}
+  els.closeDrawer.onclick=()=>{els.drawer.classList.remove('open');els.drawer.setAttribute('aria-hidden','true');}
+  els.checkout.onclick=()=>{alert('Proceed to your per-item checkout links (Payhip/PayPal/Stripe)');}
 
-  // Checkout logic
-  els.checkout.onclick = () => {
-    const items = cartItemsList(); if(items.length===0) return;
-    const withLinks = items.filter(i=>i.checkoutLink);
-    if(withLinks.length===items.length){
-      // Open each payment link in a new tab (simple approach for a static site)
-      withLinks.forEach(i=> window.open(i.checkoutLink, '_blank'));
-      alert('Opened payment links in new tabs. Complete payment for each item.');
-    } else {
-      // Compose WhatsApp order message as fallback
-      const msg = encodeURIComponent('New order:%0A' + items.map(i=>`• ${i.title} x${i.qty} — ${fmt(i.price*i.qty)}`).join('%0A') + `%0ASubtotal: ${fmt(subtotal())}`);
-      const phone = '1234567890'; // <- put your WhatsApp number here (international format)
-      window.open(`https://wa.me/${phone}?text=${msg}`, '_blank');
-    }
-  };
+  // ====== MODAL EVENTS ======
+  const modal=document.getElementById('productModal');
+  document.getElementById('closeModal').onclick=()=>{modal.style.display='none';}
+  modal.onclick=e=>{if(e.target===modal) modal.style.display='none';} // click outside modal content closes
 
-  // Filters bindings
-  els.q.oninput = e=>{state.q=e.target.value; render();};
-  els.brand.onchange = e=>{state.brand=e.target.value; render();};
-  els.cat.onchange = e=>{state.cat=e.target.value; render();};
-  els.cond.onchange = e=>{state.cond=e.target.value; render();};
-  els.sort.onchange = e=>{state.sort=e.target.value; render();};
-
-  // Initialize
-  render(); updateCart();
+  // INIT
+  render();
+  updateCart();
   </script>
 </body>
 </html>
