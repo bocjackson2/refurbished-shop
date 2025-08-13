@@ -36,8 +36,7 @@
     @media (max-width:980px){.grid{grid-template-columns:repeat(3,1fr)} .hero{grid-template-columns:1fr} }
     @media (max-width:700px){.grid{grid-template-columns:repeat(2,1fr)} }
     @media (max-width:460px){.grid{grid-template-columns:1fr} .hero h1{font-size:32px} }
-    .card{background:var(--card);border:1px solid rgba(255,255,255,.06);border-radius:16px;padding:12px;display:flex;flex-direction:column;gap:10px;cursor:pointer;transition:background-color 0.2s ease;}
-    .card:hover{background-color:rgba(61,169,252,0.1);}
+    .card{background:var(--card);border:1px solid rgba(255,255,255,.06);border-radius:16px;padding:12px;display:flex;flex-direction:column;gap:10px}
     .price{display:flex;align-items:baseline;gap:10px}
     .price .now{font-weight:800}
     .price .was{color:var(--muted);text-decoration:line-through;font-size:.9em}
@@ -57,48 +56,6 @@
     footer{margin-top:40px;border-top:1px solid rgba(255,255,255,.06);padding:22px 20px;color:var(--muted)}
     .kicker{font-size:12px;color:var(--muted);letter-spacing:.2px;text-transform:uppercase}
     .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
-
-    /* Modal styles */
-    #productModal {
-      display: none;
-      position: fixed;
-      top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0,0,0,0.8);
-      color: #fff;
-      z-index: 10000;
-      overflow-y: auto;
-      padding: 40px 20px;
-    }
-    #productModal > div {
-      background: var(--card);
-      max-width: 600px;
-      margin: 0 auto;
-      padding: 20px 30px;
-      border-radius: 12px;
-      position: relative;
-    }
-    #productModal img {
-      width: 100%;
-      border-radius: 12px;
-      margin-bottom: 16px;
-    }
-    #closeModal {
-      position: absolute;
-      top: 12px;
-      right: 16px;
-      font-size: 28px;
-      background: none;
-      border: none;
-      color: #fff;
-      cursor: pointer;
-    }
-    #modalBuyLink {
-      color: var(--accent);
-      font-weight: bold;
-      text-decoration: none;
-      display: inline-block;
-      margin-top: 12px;
-    }
   </style>
 </head>
 <body>
@@ -222,21 +179,6 @@
     </footer>
   </aside>
 
-  <!-- PRODUCT DETAILS MODAL -->
-  <div id="productModal" aria-hidden="true">
-    <div>
-      <button id="closeModal" aria-label="Close modal">×</button>
-      <img id="modalImg" src="" alt="" />
-      <h2 id="modalTitle"></h2>
-      <p><strong>Brand:</strong> <span id="modalBrand"></span></p>
-      <p><strong>Category:</strong> <span id="modalCategory"></span></p>
-      <p><strong>Condition:</strong> <span id="modalCondition"></span></p>
-      <p><strong>Specs:</strong> <span id="modalSpecs"></span></p>
-      <p><strong>Price:</strong> $<span id="modalPrice"></span></p>
-      <p><a id="modalBuyLink" href="#" target="_blank" rel="noopener" style="display:inline-block;">Buy Now</a></p>
-    </div>
-  </div>
-
   <script>
   // ====== PRODUCT DATA ======
   // Add/modify products here. For each product, you can optionally set a direct checkoutLink
@@ -303,4 +245,124 @@
     grid: document.getElementById('grid'),
     q: document.getElementById('q'), brand: document.getElementById('brand'), cat: document.getElementById('cat'), cond: document.getElementById('cond'), sort: document.getElementById('sort'),
     cartBtn: document.getElementById('cartBtn'), cartFab: document.getElementById('cartFab'), cartCount: document.getElementById('cartCount'), cartCountFab: document.getElementById('cartCountFab'),
-    drawer: document.getElementById('drawer'), closeDrawer: document.getElementById('closeDrawer
+    drawer: document.getElementById('drawer'), closeDrawer: document.getElementById('closeDrawer'), cartItems: document.getElementById('cartItems'), subtotal: document.getElementById('subtotal'), checkout: document.getElementById('checkout'), year: document.getElementById('year')
+  };
+  els.year.textContent = new Date().getFullYear();
+
+  // Populate brand filter
+  [...new Set(PRODUCTS.map(p=>p.brand))].sort().forEach(b=>{
+    const o=document.createElement('option');o.textContent=b;els.brand.appendChild(o)
+  });
+
+  // Helpers
+  const fmt = n => `$${n.toFixed(0)}`;
+  const saveCart = () => localStorage.setItem('cart-v1', JSON.stringify(state.cart));
+  const cartQty = () => Object.values(state.cart).reduce((a,b)=>a+b,0);
+  const cartItemsList = () => Object.entries(state.cart).map(([id,qty])=>({ ...PRODUCTS.find(p=>p.id===id), qty }));
+  const subtotal = () => cartItemsList().reduce((s,i)=>s+i.price*i.qty,0);
+
+  // Render products
+  function render(){
+    const q = state.q.trim().toLowerCase();
+    let list = PRODUCTS.filter(p=>
+      (!state.brand || p.brand===state.brand) &&
+      (!state.cat || p.category===state.cat) &&
+      (!state.cond || p.condition===state.cond) &&
+      (!q || (p.title+p.brand+p.specs+p.category+p.condition).toLowerCase().includes(q))
+    );
+    if(state.sort==='price-asc') list.sort((a,b)=>a.price-b.price);
+    else if(state.sort==='price-desc') list.sort((a,b)=>b.price-a.price);
+
+    els.grid.innerHTML = list.map(p=>`
+      <article class="card" role="article" aria-label="${p.title}">
+        <img loading="lazy" src="${p.img}" alt="${p.title}">
+        <div class="row wrap">
+          <strong>${p.title}</strong>
+          <span class="chip">${p.condition}</span>
+        </div>
+        <div class="muted" style="font-size:14px">${p.specs}</div>
+        <div class="row">
+          <div class="price">
+            <span class="now">${fmt(p.price)}</span>
+            ${p.was?`<span class="was">${fmt(p.was)}</span>`:''}
+          </div>
+          <div class="row" style="gap:6px">
+            ${p.checkoutLink?`<a class="btn" href="${p.checkoutLink}" target="_blank" rel="noopener">Buy</a>`:''}
+            <button class="btn" data-add="${p.id}">Add</button>
+          </div>
+        </div>
+        <div class="label">${p.brand} • ${p.category}</div>
+      </article>
+    `).join('');
+
+    // Bind add buttons
+    document.querySelectorAll('[data-add]').forEach(btn=>{
+      btn.onclick = () => { const id = btn.getAttribute('data-add'); state.cart[id]=(state.cart[id]||0)+1; updateCart(); }
+    });
+  }
+
+  function updateCart(){
+    saveCart();
+    const qty = cartQty();
+    els.cartCount.textContent = qty; els.cartCountFab.textContent = qty;
+
+    const items = cartItemsList();
+    if(items.length===0){ els.cartItems.innerHTML = `<div class="empty">Your cart is empty.</div>`; }
+    else{
+      els.cartItems.innerHTML = items.map(i=>`
+        <div class="row">
+          <div style="flex:1">
+            <strong style="display:block">${i.title}</strong>
+            <span class="label">${i.specs}</span>
+            <div class="muted">${fmt(i.price)} × ${i.qty}</div>
+          </div>
+          <div class="row" style="gap:6px">
+            ${i.checkoutLink?`<a class="btn" href="${i.checkoutLink}" target="_blank" rel="noopener">Pay</a>`:''}
+            <button class="btn" data-dec="${i.id}">−</button>
+            <button class="btn" data-inc="${i.id}">+</button>
+            <button class="btn" data-rem="${i.id}" title="Remove">🗑</button>
+          </div>
+        </div>
+        <div class="line"></div>
+      `).join('');
+      // Bind qty controls
+      document.querySelectorAll('[data-inc]').forEach(b=>b.onclick=()=>{const id=b.getAttribute('data-inc'); state.cart[id]++; updateCart();});
+      document.querySelectorAll('[data-dec]').forEach(b=>b.onclick=()=>{const id=b.getAttribute('data-dec'); state.cart[id]=Math.max(1,(state.cart[id]-1)); updateCart();});
+      document.querySelectorAll('[data-rem]').forEach(b=>b.onclick=()=>{const id=b.getAttribute('data-rem'); delete state.cart[id]; updateCart();});
+    }
+    els.subtotal.textContent = fmt(subtotal());
+  }
+
+  // Drawer controls
+  function openDrawer(){ els.drawer.classList.add('open'); els.drawer.setAttribute('aria-hidden','false'); }
+  function closeDrawer(){ els.drawer.classList.remove('open'); els.drawer.setAttribute('aria-hidden','true'); }
+  els.cartBtn.onclick = openDrawer; els.cartFab.onclick = openDrawer; els.closeDrawer.onclick = closeDrawer;
+
+  // Checkout logic
+  els.checkout.onclick = () => {
+    const items = cartItemsList(); if(items.length===0) return;
+    const withLinks = items.filter(i=>i.checkoutLink);
+    if(withLinks.length===items.length){
+      // Open each payment link in a new tab (simple approach for a static site)
+      withLinks.forEach(i=> window.open(i.checkoutLink, '_blank'));
+      alert('Opened payment links in new tabs. Complete payment for each item.');
+    } else {
+      // Compose WhatsApp order message as fallback
+      const msg = encodeURIComponent('New order:%0A' + items.map(i=>`• ${i.title} x${i.qty} — ${fmt(i.price*i.qty)}`).join('%0A') + `%0ASubtotal: ${fmt(subtotal())}`);
+      const phone = '1234567890'; // <- put your WhatsApp number here (international format)
+      window.open(`https://wa.me/${phone}?text=${msg}`, '_blank');
+    }
+  };
+
+  // Filters bindings
+  els.q.oninput = e=>{state.q=e.target.value; render();};
+  els.brand.onchange = e=>{state.brand=e.target.value; render();};
+  els.cat.onchange = e=>{state.cat=e.target.value; render();};
+  els.cond.onchange = e=>{state.cond=e.target.value; render();};
+  els.sort.onchange = e=>{state.sort=e.target.value; render();};
+
+  // Initialize
+  render(); updateCart();
+  </script>
+</body>
+</html>
