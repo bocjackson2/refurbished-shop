@@ -1,131 +1,60 @@
 <script>
   // ====== PRODUCT DATA ======
   const PRODUCTS = [
-    {
-      id: 'lap-001',
-      title: 'HP OMEN 17',
-      brand: 'HP',
-      category: 'Laptop',
-      condition: 'Grade A',
-      specs: 'i9-13900HX • RTX 4080 • 32GB • 2TB SSD • 17" WQHD',
-      price: 2300,
-      was: 2600,
-      img: 'https://picsum.photos/seed/thinkpad/600/400',
-      checkoutLink: ''
-    },
-    {
-      id: 'lap-002',
-      title: 'Apple MacBook Air 2019',
-      brand: 'Apple',
-      category: 'Laptop',
-      condition: 'Grade B',
-      specs: 'i5 • 8GB • 256GB SSD • 13.3" Retina',
-      price: 449,
-      was: 549,
-      img: 'https://picsum.photos/seed/macbook/600/400',
-      checkoutLink: ''
-    },
-    {
-      id: 'phn-101',
-      title: 'iPhone 12 128GB',
-      brand: 'Apple',
-      category: 'Phone',
-      condition: 'Grade A',
-      specs: '128GB • Battery ≥ 85%',
-      price: 389,
-      was: 459,
-      img: 'https://picsum.photos/seed/iphone12/600/400',
-      checkoutLink: ''
-    },
-    {
-      id: 'phn-102',
-      title: 'Samsung Galaxy S21',
-      brand: 'Samsung',
-      category: 'Phone',
-      condition: 'Grade B',
-      specs: '128GB • Battery ≥ 85%',
-      price: 279,
-      was: 329,
-      img: 'https://picsum.photos/seed/galaxys21/600/400',
-      checkoutLink: ''
-    }
+    { id: 'lap-001', title: 'HP OMEN 17', brand: 'HP', category: 'Laptop', condition: 'Grade A', specs: 'i9-13900HX • RTX 4080 • 32GB • 2TB SSD • 17" WQHD', price: 2300, was: 2600, img: 'https://picsum.photos/seed/thinkpad/600/400', checkoutLink: '' },
+    { id: 'lap-002', title: 'Apple MacBook Air 2019', brand: 'Apple', category: 'Laptop', condition: 'Grade B', specs: 'i5 • 8GB • 256GB SSD • 13.3" Retina', price: 449, was: 549, img: 'https://picsum.photos/seed/macbook/600/400', checkoutLink: '' },
+    { id: 'phn-101', title: 'iPhone 12 128GB', brand: 'Apple', category: 'Phone', condition: 'Grade A', specs: '128GB • Battery ≥ 85%', price: 389, was: 459, img: 'https://picsum.photos/seed/iphone12/600/400', checkoutLink: '' },
+    { id: 'phn-102', title: 'Samsung Galaxy S21', brand: 'Samsung', category: 'Phone', condition: 'Grade B', specs: '128GB • Battery ≥ 85%', price: 279, was: 329, img: 'https://picsum.photos/seed/galaxys21/600/400', checkoutLink: '' }
   ];
 
   // ====== STATE ======
-  const state = {
-    q: '', brand: '', cat: '', cond: '', sort: 'relevance',
-    cart: JSON.parse(localStorage.getItem('cart-v1')||'{}') // {id: qty}
-  };
-
+  const state = { q:'', brand:'', cat:'', cond:'', sort:'relevance', cart: JSON.parse(localStorage.getItem('cart-v1')||'{}') };
   const els = {
     grid: document.getElementById('grid'),
-    q: document.getElementById('q'), brand: document.getElementById('brand'), cat: document.getElementById('cat'), cond: document.getElementById('cond'), sort: document.getElementById('sort'),
-    cartBtn: document.getElementById('cartBtn'), cartFab: document.getElementById('cartFab'), cartCount: document.getElementById('cartCount'), cartCountFab: document.getElementById('cartCountFab'),
-    drawer: document.getElementById('drawer'), closeDrawer: document.getElementById('closeDrawer'), cartItems: document.getElementById('cartItems'), subtotal: document.getElementById('subtotal'), checkout: document.getElementById('checkout'), year: document.getElementById('year')
+    q: document.getElementById('q'),
+    brand: document.getElementById('brand'),
+    cat: document.getElementById('cat'),
+    cond: document.getElementById('cond'),
+    sort: document.getElementById('sort'),
+    cartBtn: document.getElementById('cartBtn'),
+    cartFab: document.getElementById('cartFab'),
+    cartCount: document.getElementById('cartCount'),
+    cartCountFab: document.getElementById('cartCountFab'),
+    drawer: document.getElementById('drawer'),
+    closeDrawer: document.getElementById('closeDrawer'),
+    cartItems: document.getElementById('cartItems'),
+    subtotal: document.getElementById('subtotal'),
+    checkout: document.getElementById('checkout'),
+    year: document.getElementById('year')
   };
-
-  // Append modal HTML dynamically
-  const modalHTML = `
-  <div id="productModal" style="display:none;position:fixed;z-index:80;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.7);align-items:center;justify-content:center;">
-    <div role="dialog" aria-modal="true" aria-labelledby="modalTitle" style="background:var(--card);border-radius:16px;max-width:400px;width:90%;padding:20px;position:relative;color:var(--text);box-shadow:0 0 20px rgba(0,0,0,0.5);">
-      <button id="closeModal" aria-label="Close product details" style="position:absolute;top:12px;right:12px;background:none;border:none;color:var(--text);font-size:24px;cursor:pointer;">×</button>
-      <img id="modalImg" src="" alt="" style="width:100%;border-radius:12px;margin-bottom:16px;">
-      <h2 id="modalTitle" style="margin:0 0 8px 0;"></h2>
-      <div style="font-size:14px; margin-bottom:8px;">
-        <span id="modalBrand" style="font-weight:600;"></span> •
-        <span id="modalCategory"></span> •
-        <span id="modalCondition"></span>
-      </div>
-      <div id="modalSpecs" class="muted" style="font-size:13px; margin-bottom:12px;"></div>
-      <div style="font-weight:800; font-size:18px; margin-bottom:12px;">$<span id="modalPrice"></span></div>
-      <a id="modalBuyLink" href="#" target="_blank" rel="noopener" class="btn primary" style="display:none;">Buy Now</a>
-    </div>
-  </div>
-  `;
-  document.body.insertAdjacentHTML('beforeend', modalHTML);
-
-  // Add modal elements to els
-  els.productModal = document.getElementById('productModal');
-  els.modalImg = document.getElementById('modalImg');
-  els.modalTitle = document.getElementById('modalTitle');
-  els.modalBrand = document.getElementById('modalBrand');
-  els.modalCategory = document.getElementById('modalCategory');
-  els.modalCondition = document.getElementById('modalCondition');
-  els.modalSpecs = document.getElementById('modalSpecs');
-  els.modalPrice = document.getElementById('modalPrice');
-  els.modalBuyLink = document.getElementById('modalBuyLink');
-  els.closeModal = document.getElementById('closeModal');
-
   els.year.textContent = new Date().getFullYear();
 
   // Populate brand filter
   [...new Set(PRODUCTS.map(p => p.brand))].sort().forEach(b => {
-    const o = document.createElement('option');
-    o.textContent = b;
-    els.brand.appendChild(o);
+    const o = document.createElement('option'); o.textContent = b; els.brand.appendChild(o);
   });
 
   // Helpers
   const fmt = n => `$${n.toFixed(0)}`;
   const saveCart = () => localStorage.setItem('cart-v1', JSON.stringify(state.cart));
-  const cartQty = () => Object.values(state.cart).reduce((a,b) => a+b, 0);
-  const cartItemsList = () => Object.entries(state.cart).map(([id, qty]) => ({ ...PRODUCTS.find(p => p.id === id), qty }));
-  const subtotal = () => cartItemsList().reduce((s,i) => s + i.price * i.qty, 0);
+  const cartQty = () => Object.values(state.cart).reduce((a,b)=>a+b,0);
+  const cartItemsList = () => Object.entries(state.cart).map(([id,qty]) => ({ ...PRODUCTS.find(p=>p.id===id), qty }));
+  const subtotal = () => cartItemsList().reduce((s,i)=>s + i.price*i.qty,0);
 
-  // Render products with clickable cards to open modal
+  // Render products
   function render() {
     const q = state.q.trim().toLowerCase();
     let list = PRODUCTS.filter(p =>
-      (!state.brand || p.brand === state.brand) &&
-      (!state.cat || p.category === state.cat) &&
-      (!state.cond || p.condition === state.cond) &&
+      (!state.brand || p.brand===state.brand) &&
+      (!state.cat || p.category===state.cat) &&
+      (!state.cond || p.condition===state.cond) &&
       (!q || (p.title+p.brand+p.specs+p.category+p.condition).toLowerCase().includes(q))
     );
-    if(state.sort === 'price-asc') list.sort((a,b) => a.price - b.price);
-    else if(state.sort === 'price-desc') list.sort((a,b) => b.price - a.price);
+    if(state.sort==='price-asc') list.sort((a,b)=>a.price-b.price);
+    else if(state.sort==='price-desc') list.sort((a,b)=>b.price-a.price);
 
-    els.grid.innerHTML = list.map(p => `
-      <article class="card" role="article" aria-label="${p.title}" tabindex="0" data-id="${p.id}">
+    els.grid.innerHTML = list.map(p=>`
+      <article class="card" role="article" aria-label="${p.title}">
         <img loading="lazy" src="${p.img}" alt="${p.title}">
         <div class="row wrap">
           <strong>${p.title}</strong>
@@ -135,10 +64,10 @@
         <div class="row">
           <div class="price">
             <span class="now">${fmt(p.price)}</span>
-            ${p.was ? `<span class="was">${fmt(p.was)}</span>` : ''}
+            ${p.was?`<span class="was">${fmt(p.was)}</span>`:''}
           </div>
           <div class="row" style="gap:6px">
-            ${p.checkoutLink ? `<a class="btn" href="${p.checkoutLink}" target="_blank" rel="noopener">Buy</a>` : ''}
+            ${p.checkoutLink?`<a class="btn" href="${p.checkoutLink}" target="_blank" rel="noopener">Buy</a>`:''}
             <button class="btn" data-add="${p.id}">Add</button>
           </div>
         </div>
@@ -146,28 +75,13 @@
       </article>
     `).join('');
 
-    // Bind add buttons (stop propagation so card click doesn't open modal)
-    document.querySelectorAll('[data-add]').forEach(btn => {
-      btn.onclick = e => {
+    // Bind add buttons
+    document.querySelectorAll('[data-add]').forEach(btn=>{
+      btn.onclick = e=>{
         e.stopPropagation();
         const id = btn.getAttribute('data-add');
-        state.cart[id] = (state.cart[id] || 0) + 1;
+        state.cart[id]=(state.cart[id]||0)+1;
         updateCart();
-      };
-    });
-
-    // Bind card clicks to open modal
-    document.querySelectorAll('.card').forEach(card => {
-      card.onclick = () => {
-        const id = card.getAttribute('data-id');
-        openModal(id);
-      };
-      card.onkeydown = e => {
-        if(e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          const id = card.getAttribute('data-id');
-          openModal(id);
-        }
       };
     });
   }
@@ -175,14 +89,11 @@
   function updateCart() {
     saveCart();
     const qty = cartQty();
-    els.cartCount.textContent = qty;
-    els.cartCountFab.textContent = qty;
-
+    els.cartCount.textContent = qty; els.cartCountFab.textContent = qty;
     const items = cartItemsList();
-    if(items.length === 0) {
-      els.cartItems.innerHTML = `<div class="empty">Your cart is empty.</div>`;
-    } else {
-      els.cartItems.innerHTML = items.map(i => `
+    if(items.length===0){ els.cartItems.innerHTML = `<div class="empty">Your cart is empty.</div>`; }
+    else {
+      els.cartItems.innerHTML = items.map(i=>`
         <div class="row">
           <div style="flex:1">
             <strong style="display:block">${i.title}</strong>
@@ -190,7 +101,7 @@
             <div class="muted">${fmt(i.price)} × ${i.qty}</div>
           </div>
           <div class="row" style="gap:6px">
-            ${i.checkoutLink ? `<a class="btn" href="${i.checkoutLink}" target="_blank" rel="noopener">Pay</a>` : ''}
+            ${i.checkoutLink?`<a class="btn" href="${i.checkoutLink}" target="_blank" rel="noopener">Pay</a>`:''}
             <button class="btn" data-dec="${i.id}">−</button>
             <button class="btn" data-inc="${i.id}">+</button>
             <button class="btn" data-rem="${i.id}" title="Remove">🗑</button>
@@ -198,92 +109,35 @@
         </div>
         <div class="line"></div>
       `).join('');
-
-      document.querySelectorAll('[data-inc]').forEach(b => b.onclick = () => {
-        const id = b.getAttribute('data-inc');
-        state.cart[id]++;
-        updateCart();
-      });
-      document.querySelectorAll('[data-dec]').forEach(b => b.onclick = () => {
-        const id = b.getAttribute('data-dec');
-        state.cart[id] = Math.max(1, (state.cart[id]-1));
-        updateCart();
-      });
-      document.querySelectorAll('[data-rem]').forEach(b => b.onclick = () => {
-        const id = b.getAttribute('data-rem');
-        delete state.cart[id];
-        updateCart();
-      });
+      document.querySelectorAll('[data-inc]').forEach(b=>b.onclick=()=>{const id=b.getAttribute('data-inc'); state.cart[id]++; updateCart();});
+      document.querySelectorAll('[data-dec]').forEach(b=>b.onclick=()=>{const id=b.getAttribute('data-dec'); state.cart[id]=Math.max(1,state.cart[id]-1); updateCart();});
+      document.querySelectorAll('[data-rem]').forEach(b=>b.onclick=()=>{const id=b.getAttribute('data-rem'); delete state.cart[id]; updateCart();});
     }
     els.subtotal.textContent = fmt(subtotal());
   }
 
-  // Modal open/close
-  function openModal(id) {
-    const p = PRODUCTS.find(prod => prod.id === id);
-    if(!p) return;
-    els.modalImg.src = p.img;
-    els.modalImg.alt = p.title;
-    els.modalTitle.textContent = p.title;
-    els.modalBrand.textContent = p.brand;
-    els.modalCategory.textContent = p.category;
-    els.modalCondition.textContent = p.condition;
-    els.modalSpecs.textContent = p.specs;
-    els.modalPrice.textContent = p.price.toFixed(0);
-    if(p.checkoutLink) {
-      els.modalBuyLink.href = p.checkoutLink;
-      els.modalBuyLink.style.display = 'inline-block';
-    } else {
-      els.modalBuyLink.style.display = 'none';
-    }
-    els.productModal.style.display = 'flex';
-    els.productModal.setAttribute('aria-hidden', 'false');
-  }
-  function closeModal() {
-    els.productModal.style.display = 'none';
-    els.productModal.setAttribute('aria-hidden', 'true');
-  }
-  els.closeModal.onclick = closeModal;
-  els.productModal.addEventListener('click', e => {
-    if(e.target === els.productModal) closeModal();
-  });
-
   // Drawer controls
-  function openDrawer() {
-    els.drawer.classList.add('open');
-    els.drawer.setAttribute('aria-hidden', 'false');
-  }
-  function closeDrawer() {
-    els.drawer.classList.remove('open');
-    els.drawer.setAttribute('aria-hidden', 'true');
-  }
-  els.cartBtn.onclick = openDrawer;
-  els.cartFab.onclick = openDrawer;
-  els.closeDrawer.onclick = closeDrawer;
+  els.cartBtn.onclick = els.cartFab.onclick = ()=>{ els.drawer.classList.add('open'); els.drawer.setAttribute('aria-hidden','false'); };
+  els.closeDrawer.onclick = ()=>{ els.drawer.classList.remove('open'); els.drawer.setAttribute('aria-hidden','true'); };
 
-  // Checkout logic
-  els.checkout.onclick = () => {
+  // Checkout
+  els.checkout.onclick = ()=>{
     const items = cartItemsList();
-    if(items.length === 0) return;
-    const withLinks = items.filter(i => i.checkoutLink);
-    if(withLinks.length === items.length){
-      withLinks.forEach(i => window.open(i.checkoutLink, '_blank'));
-      alert('Opened payment links in new tabs. Complete payment for each item.');
-    } else {
-      const msg = encodeURIComponent('New order:%0A' + items.map(i => `• ${i.title} x${i.qty} — ${fmt(i.price*i.qty)}`).join('%0A') + `%0ASubtotal: ${fmt(subtotal())}`);
-      const phone = '1234567890'; // Put your WhatsApp number here (international format)
-      window.open(`https://wa.me/${phone}?text=${msg}`, '_blank');
+    if(items.length===0) return;
+    const withLinks = items.filter(i=>i.checkoutLink);
+    if(withLinks.length===items.length){ withLinks.forEach(i=>window.open(i.checkoutLink,'_blank')); alert('Opened payment links.'); }
+    else {
+      const msg = encodeURIComponent('New order:%0A'+items.map(i=>`• ${i.title} x${i.qty} — ${fmt(i.price*i.qty)}`).join('%0A')+`%0ASubtotal: ${fmt(subtotal())}`);
+      window.open(`https://wa.me/1234567890?text=${msg}`,'_blank');
     }
   };
 
-  // Filters bindings
-  els.q.oninput = e => { state.q = e.target.value; render(); };
-  els.brand.onchange = e => { state.brand = e.target.value; render(); };
-  els.cat.onchange = e => { state.cat = e.target.value; render(); };
-  els.cond.onchange = e => { state.cond = e.target.value; render(); };
-  els.sort.onchange = e => { state.sort = e.target.value; render(); };
+  // Filters
+  els.q.oninput=e=>{state.q=e.target.value; render();};
+  els.brand.onchange=e=>{state.brand=e.target.value; render();};
+  els.cat.onchange=e=>{state.cat=e.target.value; render();};
+  els.cond.onchange=e=>{state.cond=e.target.value; render();};
+  els.sort.onchange=e=>{state.sort=e.target.value; render();};
 
-  // Initialize
-  render();
-  updateCart();
+  render(); updateCart();
 </script>
