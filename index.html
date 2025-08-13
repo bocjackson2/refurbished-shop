@@ -1,265 +1,368 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Refurbished Tech Store</title>
-<style>
-  :root{
-    --bg:#0b0d10;
-    --card:#12151a;
-    --muted:#7a8699;
-    --text:#e7ecf3;
-    --accent:#3da9fc;
-    --accent-2:#2cb67d;
-    --danger:#ef476f;
-  }
-  body {
-    margin:0;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
-      Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
-    background: var(--bg);
-    color: var(--text);
-  }
-  header {
-    padding: 1rem;
-    background: var(--card);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-  a.brand {
-    color: var(--accent);
-    font-weight: bold;
-    font-size: 1.5rem;
-    text-decoration: none;
-  }
-  main {
-    max-width: 960px;
-    margin: 1rem auto;
-    padding: 0 1rem;
-  }
-  .products {
-    display: grid;
-    grid-template-columns: repeat(auto-fill,minmax(260px,1fr));
-    gap: 1rem;
-  }
-  .product-card {
-    background: var(--card);
-    border-radius: 8px;
-    padding: 1rem;
-    box-sizing: border-box;
-    display: flex;
-    flex-direction: column;
-  }
-  .product-card img {
-    width: 100%;
-    border-radius: 8px;
-    margin-bottom: 0.5rem;
-    cursor: pointer;
-  }
-  .product-card strong, .product-card a.product-link {
-    color: var(--accent);
-    text-decoration: none;
-    cursor: pointer;
-    font-size: 1.1rem;
-  }
-  .product-card p {
-    margin: 0.25rem 0;
-    color: var(--muted);
-    flex-grow: 1;
-  }
-  .price {
-    margin-top: auto;
-    font-weight: bold;
-    color: var(--accent-2);
-  }
-  /* Modal styles */
-  #productModal {
-    display:none;
-    position:fixed;
-    top:0;left:0;width:100%;height:100%;
-    background:rgba(0,0,0,0.85);
-    color:#fff;
-    z-index:1000;
-    overflow:auto;
-  }
-  #productModal > div {
-    background: var(--card);
-    max-width: 600px;
-    margin: 5% auto;
-    padding: 20px;
-    border-radius: 12px;
-    position: relative;
-  }
-  #productModal img {
-    width: 100%;
-    border-radius: 12px;
-    margin-bottom: 16px;
-  }
-  #closeModal {
-    position: absolute;
-    top: 12px;
-    right: 16px;
-    font-size: 28px;
-    background: none;
-    border: none;
-    color: #fff;
-    cursor: pointer;
-  }
-  #modalBuyLink {
-    color: var(--accent);
-    font-weight: bold;
-    text-decoration: none;
-  }
-  /* Responsive */
-  @media(max-width: 640px){
-    .products {
-      grid-template-columns: 1fr;
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Refurbished Tech Shop</title>
+  <meta name="description" content="Affordable refurbished laptops and phones with warranty." />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#0b0d10; --card:#12151a; --muted:#7a8699; --text:#e7ecf3; --accent:#3da9fc; --accent-2:#2cb67d; --danger:#ef476f;
     }
-  }
-</style>
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
+    a{color:inherit;text-decoration:none}
+    img{max-width:100%;display:block;border-radius:12px}
+    .container{max-width:1080px;margin:0 auto;padding:20px}
+    header{position:sticky;top:0;z-index:50;background:linear-gradient(180deg, rgba(11,13,16,.96), rgba(11,13,16,.6) 70%, transparent)}
+    .nav{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 20px;border-bottom:1px solid rgba(255,255,255,.06)}
+    .brand{font-weight:800;letter-spacing:.3px}
+    .pill{background:rgba(255,255,255,.06);padding:6px 10px;border-radius:999px;font-size:12px;color:var(--muted)}
+    .btn{display:inline-flex;align-items:center;gap:8px;padding:10px 14px;border-radius:12px;border:1px solid rgba(255,255,255,.12);background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.04));cursor:pointer}
+    .btn:hover{border-color:rgba(255,255,255,.3)}
+    .btn.primary{background:linear-gradient(180deg,var(--accent),#247ccf);border:none;color:white}
+    .btn.ghost{background:transparent;border:1px solid rgba(255,255,255,.18)}
+    .hero{display:grid;grid-template-columns:1.2fr .8fr;gap:24px;align-items:center;padding:24px 20px}
+    .hero h1{font-size:40px;line-height:1.1;margin:8px 0 10px}
+    .hero p{color:var(--muted);margin:0 0 16px}
+    .badges{display:flex;gap:8px;flex-wrap:wrap}
+    .section{padding:16px 20px}
+    .toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:8px 0 16px}
+    .input, select{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);color:var(--text);padding:10px 12px;border-radius:12px;outline:none}
+    .grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+    @media (max-width:980px){.grid{grid-template-columns:repeat(3,1fr)} .hero{grid-template-columns:1fr} }
+    @media (max-width:700px){.grid{grid-template-columns:repeat(2,1fr)} }
+    @media (max-width:460px){.grid{grid-template-columns:1fr} .hero h1{font-size:32px} }
+    .card{background:var(--card);border:1px solid rgba(255,255,255,.06);border-radius:16px;padding:12px;display:flex;flex-direction:column;gap:10px}
+    .price{display:flex;align-items:baseline;gap:10px}
+    .price .now{font-weight:800}
+    .price .was{color:var(--muted);text-decoration:line-through;font-size:.9em}
+    .muted{color:var(--muted)}
+    .label{font-size:12px;color:var(--muted)}
+    .chip{font-size:12px;padding:6px 8px;border-radius:999px;border:1px solid rgba(255,255,255,.14)}
+    .row{display:flex;justify-content:space-between;align-items:center;gap:8px}
+    .row.wrap{flex-wrap:wrap}
+    .cart-fab{position:fixed;right:16px;bottom:16px;z-index:60}
+    .drawer{position:fixed;right:0;top:0;height:100%;width:360px;max-width:92vw;background:var(--card);border-left:1px solid rgba(255,255,255,.08);transform:translateX(110%);transition:transform .25s ease;z-index:70;display:flex;flex-direction:column}
+    .drawer.open{transform:translateX(0)}
+    .drawer header{padding:14px 16px;border-bottom:1px solid rgba(255,255,255,.08)}
+    .drawer main{padding:12px 16px;overflow:auto;flex:1}
+    .drawer footer{padding:12px 16px;border-top:1px solid rgba(255,255,255,.08)}
+    .line{height:1px;background:rgba(255,255,255,.08);margin:6px 0}
+    .empty{color:var(--muted);text-align:center;padding:32px 8px}
+    footer{margin-top:40px;border-top:1px solid rgba(255,255,255,.06);padding:22px 20px;color:var(--muted)}
+    .kicker{font-size:12px;color:var(--muted);letter-spacing:.2px;text-transform:uppercase}
+    .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+  </style>
 </head>
 <body>
-<header>
-  <a href="#" class="brand">Refurbished Tech Store</a>
-  <nav>
-    <a href="mailto:youremail@example.com" style="color: var(--text); margin-right:1rem;">Email</a>
-    <a href="https://wa.me/6581234567" target="_blank" style="color: var(--text);">WhatsApp</a>
-  </nav>
-</header>
+  <header>
+    <div class="nav container">
+      <div class="row">
+        <span class="pill">Refurb</span>
+        <a href="#" class="brand">TechParadise</a>
+      </div>
+      <nav class="row wrap">
+        <a class="btn ghost" href="#shop">Shop</a>
+        <a class="btn ghost" href="#about">About</a>
+        <a class="btn ghost" href="#warranty">Warranty</a>
+        <a class="btn ghost" href="#contact">Contact</a>
+        <button class="btn" id="cartBtn" aria-label="Open cart">🛒 <span id="cartCount">0</span></button>
+      </nav>
+    </div>
+  </header>
 
-<main>
-  <h1>Products</h1>
-  <div class="products" id="productList">
-    <!-- Products will be rendered here -->
-  </div>
-</main>
+  <section class="hero container">
+    <div>
+      <div class="kicker">Refurbished • Tested • Guaranteed</div>
+      <h1>High‑quality refurbished laptops & phones at fair prices</h1>
+      <p>Every device is inspected, data‑wiped, battery‑checked, and backed by a 6‑month warranty. Save money and the planet.</p>
+      <div class="badges">
+        <span class="chip">🚚 Free local pickup</span>
+        <span class="chip">🔋 Battery health ≥ 80%</span>
+        <span class="chip">🧪 25‑point QA</span>
+      </div>
+      <div style="margin-top:14px">
+        <a class="btn primary" href="#shop">Browse products</a>
+        <a class="btn" href="#contact">Ask a question</a>
+      </div>
+    </div>
+    <div>
+      <img alt="Refurbished tech" src="https://images.unsplash.com/photo-1517336714731-489689fd1ca8?q=80&w=1200&auto=format&fit=crop" />
+    </div>
+  </section>
 
-<!-- Modal -->
-<div id="productModal" aria-hidden="true">
-  <div>
-    <button id="closeModal" aria-label="Close modal">×</button>
-    <img id="modalImg" src="" alt="" />
-    <h2 id="modalTitle"></h2>
-    <p><strong>Brand:</strong> <span id="modalBrand"></span></p>
-    <p><strong>Category:</strong> <span id="modalCategory"></span></p>
-    <p><strong>Condition:</strong> <span id="modalCondition"></span></p>
-    <p><strong>Specs:</strong> <span id="modalSpecs"></span></p>
-    <p><strong>Price:</strong> $<span id="modalPrice"></span></p>
-    <p><a id="modalBuyLink" href="#" target="_blank" rel="noopener" style="display:inline-block;">Buy Now</a></p>
-  </div>
-</div>
+  <section class="section container" id="shop">
+    <div class="row wrap" style="justify-content:space-between;align-items:end">
+      <div>
+        <div class="kicker">Shop</div>
+        <h2 style="margin:6px 0 0">Laptops & Phones</h2>
+        <div class="label">Fast, minimal storefront. Add your own products below.</div>
+      </div>
+      <div class="toolbar">
+        <input class="input" id="q" placeholder="Search (brand, model, spec)" />
+        <select id="brand">
+          <option value="">All brands</option>
+        </select>
+        <select id="cat">
+          <option value="">All categories</option>
+          <option>Laptop</option>
+          <option>Phone</option>
+        </select>
+        <select id="cond">
+          <option value="">Any condition</option>
+          <option>Grade A</option>
+          <option>Grade B</option>
+          <option>Grade C</option>
+        </select>
+        <select id="sort">
+          <option value="relevance">Sort: Relevance</option>
+          <option value="price-asc">Price: Low → High</option>
+          <option value="price-desc">Price: High → Low</option>
+        </select>
+      </div>
+    </div>
 
-<script>
-  // Your product data
+    <div id="grid" class="grid" aria-live="polite"></div>
+  </section>
+
+  <section class="section container" id="about">
+    <div class="kicker">About</div>
+    <h2>Why buy refurbished from us?</h2>
+    <p class="muted">We’re a small, local refurbisher focused on reliability. Devices are professionally cleaned, tested, and securely data‑wiped. We provide honest cosmetic grading and transparent battery health. Sustainability without compromise.</p>
+  </section>
+
+  <section class="section container" id="warranty">
+    <div class="kicker">Warranty & Returns</div>
+    <ul>
+      <li>6‑month limited hardware warranty (upgradeable to 12 months).</li>
+      <li>7‑day hassle‑free returns if the device isn’t as described.</li>
+      <li>Excludes accidental damage and liquid exposure.</li>
+    </ul>
+  </section>
+
+  <section class="section container" id="contact">
+    <div class="kicker">Contact</div>
+    <h2>Questions? Bulk orders? Trade‑ins?</h2>
+    <p class="muted">Email <a href="mailto:youremail@example.com">youremail@example.com</a> or WhatsApp <a href="https://wa.me/1234567890" target="_blank" rel="noopener">+1 234 567 890</a>.</p>
+    <p class="muted">Pickup available by appointment.</p>
+  </section>
+
+  <footer class="container">
+    <div class="row wrap">
+      <span>© <span id="year"></span> Your Tech Store</span>
+      <span>Powered by a minimal static site • No monthly fees</span>
+    </div>
+  </footer>
+
+  <button class="btn primary cart-fab" id="cartFab">🛒 <span id="cartCountFab">0</span></button>
+
+  <!-- CART DRAWER -->
+  <aside class="drawer" id="drawer" aria-hidden="true" aria-label="Shopping cart">
+    <header class="row">
+      <strong>Cart</strong>
+      <button class="btn" id="closeDrawer">✕</button>
+    </header>
+    <main id="cartItems"></main>
+    <footer>
+      <div class="row">
+        <div>
+          <div class="label">Subtotal</div>
+          <div id="subtotal" style="font-weight:800;font-size:18px">$0</div>
+        </div>
+        <button class="btn primary" id="checkout">Checkout</button>
+      </div>
+      <div class="label" style="margin-top:8px">Checkout opens your per‑item payment links (Payhip/PayPal/Stripe). If not set, we’ll draft a WhatsApp order message instead.</div>
+    </footer>
+  </aside>
+
+  <script>
+  // ====== PRODUCT DATA ======
+  // Add/modify products here. For each product, you can optionally set a direct checkoutLink
+  // (e.g., a Payhip product link, Stripe Payment Link, PayPal button URL).
+  // If checkoutLink is empty, cart checkout will compose a WhatsApp order message.
   const PRODUCTS = [
     {
-      id: 'hp-omen-17',
-      title: 'HP OMEN 17 RTX 4080',
+      id: 'lap-001',
+      title: 'HP OMEN 17',
       brand: 'HP',
       category: 'Laptop',
       condition: 'Grade A',
-      specs: 'Intel i7 • 32GB RAM • RTX 4080 • 1TB SSD • 17" QHD',
-      price: 2299,
-      was: 2599,
-      img: 'https://picsum.photos/seed/hpomen/600/400',
+      specs: 'i9-13900HX • RTX 4080 • 32GB • 2TB SSD • 17" WQHD',
+      price: 2300,
+      was: 2600,
+      img: 'https://picsum.photos/seed/thinkpad/600/400',
+      checkoutLink: '' // paste your Payhip/Stripe/PayPal link here
+    },
+    {
+      id: 'lap-002',
+      title: 'Apple MacBook Air 2019',
+      brand: 'Apple',
+      category: 'Laptop',
+      condition: 'Grade B',
+      specs: 'i5 • 8GB • 256GB SSD • 13.3" Retina',
+      price: 449,
+      was: 549,
+      img: 'https://picsum.photos/seed/macbook/600/400',
       checkoutLink: ''
     },
-    // You can add more products here...
+    {
+      id: 'phn-101',
+      title: 'iPhone 12 128GB',
+      brand: 'Apple',
+      category: 'Phone',
+      condition: 'Grade A',
+      specs: '128GB • Battery ≥ 85%',
+      price: 389,
+      was: 459,
+      img: 'https://picsum.photos/seed/iphone12/600/400',
+      checkoutLink: ''
+    },
+    {
+      id: 'phn-102',
+      title: 'Samsung Galaxy S21',
+      brand: 'Samsung',
+      category: 'Phone',
+      condition: 'Grade B',
+      specs: '128GB • Battery ≥ 85%',
+      price: 279,
+      was: 329,
+      img: 'https://picsum.photos/seed/galaxys21/600/400',
+      checkoutLink: ''
+    }
   ];
 
-  // Render products on the page
-  const productList = document.getElementById('productList');
-  productList.innerHTML = PRODUCTS.map(p => `
-    <div class="product-card">
-      <img src="${p.img}" alt="${p.title}" />
-      <a href="?product=${p.id}" class="product-link"><strong>${p.title}</strong></a>
-      <p>${p.specs}</p>
-      <p class="price">$${p.price.toFixed(0)}</p>
-    </div>
-  `).join('');
+  // ====== STATE ======
+  const state = {
+    q: '', brand: '', cat: '', cond: '', sort: 'relevance',
+    cart: JSON.parse(localStorage.getItem('cart-v1')||'{}') // {id: qty}
+  };
 
-  // Modal elements
-  const modal = document.getElementById('productModal');
-  const closeModalBtn = document.getElementById('closeModal');
-  const modalImg = document.getElementById('modalImg');
-  const modalTitle = document.getElementById('modalTitle');
-  const modalBrand = document.getElementById('modalBrand');
-  const modalCategory = document.getElementById('modalCategory');
-  const modalCondition = document.getElementById('modalCondition');
-  const modalSpecs = document.getElementById('modalSpecs');
-  const modalPrice = document.getElementById('modalPrice');
-  const modalBuyLink = document.getElementById('modalBuyLink');
+  const els = {
+    grid: document.getElementById('grid'),
+    q: document.getElementById('q'), brand: document.getElementById('brand'), cat: document.getElementById('cat'), cond: document.getElementById('cond'), sort: document.getElementById('sort'),
+    cartBtn: document.getElementById('cartBtn'), cartFab: document.getElementById('cartFab'), cartCount: document.getElementById('cartCount'), cartCountFab: document.getElementById('cartCountFab'),
+    drawer: document.getElementById('drawer'), closeDrawer: document.getElementById('closeDrawer'), cartItems: document.getElementById('cartItems'), subtotal: document.getElementById('subtotal'), checkout: document.getElementById('checkout'), year: document.getElementById('year')
+  };
+  els.year.textContent = new Date().getFullYear();
 
-  function showProductDetails(id) {
-    const p = PRODUCTS.find(pr => pr.id === id);
-    if(!p) return closeModal();
+  // Populate brand filter
+  [...new Set(PRODUCTS.map(p=>p.brand))].sort().forEach(b=>{
+    const o=document.createElement('option');o.textContent=b;els.brand.appendChild(o)
+  });
 
-    modalImg.src = p.img;
-    modalImg.alt = p.title;
-    modalTitle.textContent = p.title;
-    modalBrand.textContent = p.brand;
-    modalCategory.textContent = p.category;
-    modalCondition.textContent = p.condition;
-    modalSpecs.textContent = p.specs;
-    modalPrice.textContent = p.price.toFixed(0);
-    if(p.checkoutLink) {
-      modalBuyLink.href = p.checkoutLink;
-      modalBuyLink.style.display = 'inline-block';
+  // Helpers
+  const fmt = n => `$${n.toFixed(0)}`;
+  const saveCart = () => localStorage.setItem('cart-v1', JSON.stringify(state.cart));
+  const cartQty = () => Object.values(state.cart).reduce((a,b)=>a+b,0);
+  const cartItemsList = () => Object.entries(state.cart).map(([id,qty])=>({ ...PRODUCTS.find(p=>p.id===id), qty }));
+  const subtotal = () => cartItemsList().reduce((s,i)=>s+i.price*i.qty,0);
+
+  // Render products
+  function render(){
+    const q = state.q.trim().toLowerCase();
+    let list = PRODUCTS.filter(p=>
+      (!state.brand || p.brand===state.brand) &&
+      (!state.cat || p.category===state.cat) &&
+      (!state.cond || p.condition===state.cond) &&
+      (!q || (p.title+p.brand+p.specs+p.category+p.condition).toLowerCase().includes(q))
+    );
+    if(state.sort==='price-asc') list.sort((a,b)=>a.price-b.price);
+    else if(state.sort==='price-desc') list.sort((a,b)=>b.price-a.price);
+
+    els.grid.innerHTML = list.map(p=>`
+      <article class="card" role="article" aria-label="${p.title}">
+        <img loading="lazy" src="${p.img}" alt="${p.title}">
+        <div class="row wrap">
+          <strong>${p.title}</strong>
+          <span class="chip">${p.condition}</span>
+        </div>
+        <div class="muted" style="font-size:14px">${p.specs}</div>
+        <div class="row">
+          <div class="price">
+            <span class="now">${fmt(p.price)}</span>
+            ${p.was?`<span class="was">${fmt(p.was)}</span>`:''}
+          </div>
+          <div class="row" style="gap:6px">
+            ${p.checkoutLink?`<a class="btn" href="${p.checkoutLink}" target="_blank" rel="noopener">Buy</a>`:''}
+            <button class="btn" data-add="${p.id}">Add</button>
+          </div>
+        </div>
+        <div class="label">${p.brand} • ${p.category}</div>
+      </article>
+    `).join('');
+
+    // Bind add buttons
+    document.querySelectorAll('[data-add]').forEach(btn=>{
+      btn.onclick = () => { const id = btn.getAttribute('data-add'); state.cart[id]=(state.cart[id]||0)+1; updateCart(); }
+    });
+  }
+
+  function updateCart(){
+    saveCart();
+    const qty = cartQty();
+    els.cartCount.textContent = qty; els.cartCountFab.textContent = qty;
+
+    const items = cartItemsList();
+    if(items.length===0){ els.cartItems.innerHTML = `<div class="empty">Your cart is empty.</div>`; }
+    else{
+      els.cartItems.innerHTML = items.map(i=>`
+        <div class="row">
+          <div style="flex:1">
+            <strong style="display:block">${i.title}</strong>
+            <span class="label">${i.specs}</span>
+            <div class="muted">${fmt(i.price)} × ${i.qty}</div>
+          </div>
+          <div class="row" style="gap:6px">
+            ${i.checkoutLink?`<a class="btn" href="${i.checkoutLink}" target="_blank" rel="noopener">Pay</a>`:''}
+            <button class="btn" data-dec="${i.id}">−</button>
+            <button class="btn" data-inc="${i.id}">+</button>
+            <button class="btn" data-rem="${i.id}" title="Remove">🗑</button>
+          </div>
+        </div>
+        <div class="line"></div>
+      `).join('');
+      // Bind qty controls
+      document.querySelectorAll('[data-inc]').forEach(b=>b.onclick=()=>{const id=b.getAttribute('data-inc'); state.cart[id]++; updateCart();});
+      document.querySelectorAll('[data-dec]').forEach(b=>b.onclick=()=>{const id=b.getAttribute('data-dec'); state.cart[id]=Math.max(1,(state.cart[id]-1)); updateCart();});
+      document.querySelectorAll('[data-rem]').forEach(b=>b.onclick=()=>{const id=b.getAttribute('data-rem'); delete state.cart[id]; updateCart();});
+    }
+    els.subtotal.textContent = fmt(subtotal());
+  }
+
+  // Drawer controls
+  function openDrawer(){ els.drawer.classList.add('open'); els.drawer.setAttribute('aria-hidden','false'); }
+  function closeDrawer(){ els.drawer.classList.remove('open'); els.drawer.setAttribute('aria-hidden','true'); }
+  els.cartBtn.onclick = openDrawer; els.cartFab.onclick = openDrawer; els.closeDrawer.onclick = closeDrawer;
+
+  // Checkout logic
+  els.checkout.onclick = () => {
+    const items = cartItemsList(); if(items.length===0) return;
+    const withLinks = items.filter(i=>i.checkoutLink);
+    if(withLinks.length===items.length){
+      // Open each payment link in a new tab (simple approach for a static site)
+      withLinks.forEach(i=> window.open(i.checkoutLink, '_blank'));
+      alert('Opened payment links in new tabs. Complete payment for each item.');
     } else {
-      modalBuyLink.style.display = 'none';
+      // Compose WhatsApp order message as fallback
+      const msg = encodeURIComponent('New order:%0A' + items.map(i=>`• ${i.title} x${i.qty} — ${fmt(i.price*i.qty)}`).join('%0A') + `%0ASubtotal: ${fmt(subtotal())}`);
+      const phone = '1234567890'; // <- put your WhatsApp number here (international format)
+      window.open(`https://wa.me/${phone}?text=${msg}`, '_blank');
     }
+  };
 
-    modal.style.display = 'block';
-    modal.setAttribute('aria-hidden', 'false');
-    document.body.style.overflow = 'hidden'; // prevent scroll behind modal
-  }
+  // Filters bindings
+  els.q.oninput = e=>{state.q=e.target.value; render();};
+  els.brand.onchange = e=>{state.brand=e.target.value; render();};
+  els.cat.onchange = e=>{state.cat=e.target.value; render();};
+  els.cond.onchange = e=>{state.cond=e.target.value; render();};
+  els.sort.onchange = e=>{state.sort=e.target.value; render();};
 
-  function closeModal() {
-    modal.style.display = 'none';
-    modal.setAttribute('aria-hidden', 'true');
-    document.body.style.overflow = '';
-    history.pushState("", document.title, window.location.pathname + window.location.hash);
-  }
-
-  // Event delegation for product links
-  document.body.addEventListener('click', e => {
-    const link = e.target.closest('.product-link');
-    if(link) {
-      e.preventDefault();
-      const url = new URL(link.href);
-      const productId = url.searchParams.get('product');
-      if(productId) {
-        showProductDetails(productId);
-        history.pushState({productId}, "", `?product=${productId}`);
-      }
-    }
-  });
-
-  closeModalBtn.onclick = closeModal;
-
-  // Close modal on Escape key
-  document.addEventListener('keydown', e => {
-    if(e.key === 'Escape' && modal.style.display === 'block') {
-      closeModal();
-    }
-  });
-
-  // Handle browser back/forward buttons
-  window.addEventListener('popstate', () => {
-    const params = new URLSearchParams(window.location.search);
-    const productId = params.get('product');
-    if(productId) showProductDetails(productId);
-    else closeModal();
-  });
-
-  // Open modal if ?product= in URL on page load
-  window.addEventListener('load', () => {
-    const params = new URLSearchParams(window.location.search);
-    const productId = params.get('product');
-    if(productId) showProductDetails(productId);
-  });
-</script>
+  // Initialize
+  render(); updateCart();
+  </script>
 </body>
 </html>
